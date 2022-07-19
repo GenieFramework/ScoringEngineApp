@@ -10,7 +10,7 @@ using Random
 using Distributed
 @everywhere using EvoTrees
 
-results_path = joinpath(@__DIR__, "results")
+results_path = joinpath(@__DIR__, "..", "assets")
 isdir(results_path) || mkdir(results_path)
 ENV["RESULTS_FILE"] = results_path
 
@@ -22,14 +22,14 @@ const assets_path = joinpath(@__DIR__, "..", "assets")
 const preproc_gbt = BSON.load(joinpath(assets_path, "preproc-gbt.bson"), @__MODULE__)[:preproc]
 const adapter_gbt = BSON.load(joinpath(assets_path, "adapter-gbt.bson"), @__MODULE__)[:adapter]
 
-df_tot = ScoringEngineDemo.load_data(joinpath(assets_path, "training_data.csv"))
+df_tot = ScoringEngineExport.load_data(joinpath(assets_path, "training_data.csv"))
 
 # set target
 transform!(df_tot, "claim_amount" => ByRow(x -> x > 0 ? 1.0f0 : 0.0f0) => "event")
 
 # train/eval split
 Random.seed!(123)
-df_train, df_eval = ScoringEngineDemo.data_splits(df_tot, 0.9)
+df_train, df_eval = ScoringEngineExport.data_splits(df_tot, 0.9)
 
 df_train = preproc_gbt(df_train)
 df_eval = preproc_gbt(df_eval)

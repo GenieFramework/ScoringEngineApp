@@ -1,4 +1,4 @@
-include("../models/scoringengine/ScoringEngineDemo.jl")
+include("../models/scoringengine/ScoringEngineExport.jl")
 
 using DataFrames
 using Statistics
@@ -10,7 +10,7 @@ using Random
 
 global targetname = "event"
 
-df_tot = ScoringEngineDemo.load_data("assets/training_data.csv")
+df_tot = ScoringEngineExport.load_data("assets/training_data.csv")
 
 # set target
 transform!(df_tot, "claim_amount" => ByRow(x -> x > 0 ? 1.0f0 : 0.0f0) => "event")
@@ -22,10 +22,10 @@ norm_feats = ["vh_age", "vh_value", "vh_speed", "vh_weight", "drv_age1",
 
 # train/eval split
 Random.seed!(123)
-df_train, df_eval = ScoringEngineDemo.data_splits(df_tot, 0.9)
+df_train, df_eval = ScoringEngineExport.data_splits(df_tot, 0.9)
 
-preproc = ScoringEngineDemo.build_preproc(df_train, norm_feats = norm_feats)
-adapter = ScoringEngineDemo.build_adapter_gbt(norm_feats, targetname)
+preproc = ScoringEngineExport.build_preproc(df_train, norm_feats = norm_feats)
+adapter = ScoringEngineExport.build_adapter_gbt(norm_feats, targetname)
 
 df_train_pre = preproc(df_train)
 

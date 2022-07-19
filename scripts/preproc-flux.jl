@@ -1,10 +1,10 @@
-include("../models/scoringengine/ScoringEngineDemo.jl")
+include("../models/scoringengine/ScoringEngineExport.jl")
 
 using DataFrames
 using Statistics
 using StatsBase: sample
 using BSON
-# using CairoMakie
+using CairoMakie
 using Random
 
 using Flux
@@ -12,7 +12,8 @@ using Flux: update!
 
 global targetname = "event"
 
-df_tot = ScoringEngineDemo.load_data("assets/training_data.csv")
+const assets_path = joinpath(@__DIR__, "..", "assets")
+df_tot = ScoringEngineExport.load_data("assets/training_data.csv")
 
 # minimal DF verbs
 dfg = groupby(df_tot, "pol_coverage")
@@ -29,13 +30,13 @@ norm_feats = ["vh_age", "vh_value", "vh_speed", "vh_weight", "drv_age1",
 
 # train/eval split
 Random.seed!(123)
-df_train, df_eval = ScoringEngineDemo.data_splits(df_tot, 0.9)
+df_train, df_eval = ScoringEngineExport.data_splits(df_tot, 0.9)
 
 density(collect(skipmissing(df_train.vh_age)))
 density(collect(skipmissing(df_train.drv_age1)))
 
-preproc = ScoringEngineDemo.build_preproc(df_train, norm_feats = norm_feats)
-adapter = ScoringEngineDemo.build_adapter_flux(norm_feats, targetname)
+preproc = ScoringEngineExport.build_preproc(df_train, norm_feats = norm_feats)
+adapter = ScoringEngineExport.build_adapter_flux(norm_feats, targetname)
 
 df_train_pre = preproc(df_train)
 
