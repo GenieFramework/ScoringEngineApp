@@ -1,0 +1,1 @@
+const assets_path = "/Users/abhi/.julia/geniebuilder/apps/ScoringEngineApp/assets" #change this to something relative to AppDir
