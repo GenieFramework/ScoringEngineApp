@@ -17,9 +17,9 @@ using ShapML
 using Weave
 
 using StatsBase: sample
-# using Statistics: mean, std
+using Statistics: mean, std
 
-include("scoringengine/ScoringEngineDemo.jl")
+include("scoringengine/ScoringEngineExport.jl")
 
 export Score
 

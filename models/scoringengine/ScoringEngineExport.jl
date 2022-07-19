@@ -1,6 +1,6 @@
-module ScoringEngineDemo
+module ScoringEngineExport
 
-# using DataFrames
+using DataFrames
 using Flux
 using EvoTrees
 using EvoTrees: predict
@@ -9,7 +9,7 @@ using ShapML
 using Loess
 
 using StatsBase: sample, quantile
-# using Statistics: mean, std
+using Statistics: mean, std
 
 using StipplePlotly
 using PlotlyBase
