@@ -1,6 +1,7 @@
 @info "Initializing packages"
 
-using ScoringEngineApp.ScoringEngine
+include("../models/scoringengine/ScoringEngineExport.jl")
+
 using BSON
 using CSV
 using DataFrames
@@ -18,17 +19,17 @@ ENV["RESULTS_FILE"] = results_path
 
 @info "Initializing assets"
 const assets_path = joinpath(@__DIR__, "..", "assets")
-const preproc_gbt = BSON.load(joinpath(assets_path, "preproc-gbt.bson"), ScoringEngine)[:preproc]
-const adapter_gbt = BSON.load(joinpath(assets_path, "adapter-gbt.bson"), ScoringEngine)[:adapter]
+const preproc_gbt = BSON.load(joinpath(assets_path, "preproc-gbt.bson"), ScoringEngineExport)[:preproc]
+const adapter_gbt = BSON.load(joinpath(assets_path, "adapter-gbt.bson"), ScoringEngineExport)[:adapter]
 
-df_tot = ScoringEngine.load_data(joinpath(assets_path, "training_data.csv"))
+df_tot = ScoringEngineExport.load_data(joinpath(assets_path, "training_data.csv"))
 
 # set target
 transform!(df_tot, "claim_amount" => ByRow(x -> x > 0 ? 1.0f0 : 0.0f0) => "event")
 
 # train/eval split
 Random.seed!(123)
-df_train, df_eval = ScoringEngine.data_splits(df_tot, 0.9)
+df_train, df_eval = ScoringEngineExport.data_splits(df_tot, 0.9)
 
 df_train = preproc_gbt(df_train)
 df_eval = preproc_gbt(df_eval)

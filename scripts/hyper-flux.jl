@@ -1,8 +1,9 @@
+include("../models/scoringengine/ScoringEngineExport.jl")
+
 using BSON
 using CSV
 using DataFrames
 using Random
-using ScoringEngineApp.ScoringEngine
 
 using Distributed
 @everywhere using Statistics: mean
@@ -19,17 +20,17 @@ ENV["RESULTS_FILE"] = results_path
 
 @info "Initializing assets"
 const assets_path = joinpath(@__DIR__, "..", "assets")
-const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), ScoringEngine)[:preproc]
-const adapter_flux = BSON.load(joinpath(assets_path, "adapter-flux.bson"), ScoringEngine)[:adapter]
+const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), ScoringEngineExport)[:preproc]
+const adapter_flux = BSON.load(joinpath(assets_path, "adapter-flux.bson"), ScoringEngineExport)[:adapter]
 
-df_tot = ScoringEngine.load_data(joinpath(assets_path, "training_data.csv"))
+df_tot = ScoringEngineExport.load_data(joinpath(assets_path, "training_data.csv"))
 
 # set target
 transform!(df_tot, "claim_amount" => ByRow(x -> x > 0 ? 1.0f0 : 0.0f0) => "event")
 
 # train/eval split
 Random.seed!(123)
-df_train, df_eval = ScoringEngine.data_splits(df_tot, 0.9)
+df_train, df_eval = ScoringEngineExport.data_splits(df_tot, 0.9)
 
 df_train = preproc_flux(df_train)
 df_eval = preproc_flux(df_eval)
