@@ -1,4 +1,4 @@
-include("../models/scoringengine/ScoringEngineExport.jl")
+include("../models/ScoringEngine.jl")
 
 using DataFrames
 using Statistics
@@ -12,8 +12,9 @@ using Flux: update!
 
 global targetname = "event"
 
+const result_path = joinpath(@__DIR__, "..", "assets")
 const assets_path = joinpath(@__DIR__, "..", "assets")
-df_tot = ScoringEngineExport.load_data("assets/training_data.csv")
+df_tot = ScoringEngine.load_data("assets/training_data.csv")
 
 # minimal DF verbs
 dfg = groupby(df_tot, "pol_coverage")
@@ -30,13 +31,13 @@ norm_feats = ["vh_age", "vh_value", "vh_speed", "vh_weight", "drv_age1",
 
 # train/eval split
 Random.seed!(123)
-df_train, df_eval = ScoringEngineExport.data_splits(df_tot, 0.9)
+df_train, df_eval = ScoringEngine.data_splits(df_tot, 0.9)
 
 density(collect(skipmissing(df_train.vh_age)))
 density(collect(skipmissing(df_train.drv_age1)))
 
-preproc = ScoringEngineExport.build_preproc(df_train, norm_feats = norm_feats)
-adapter = ScoringEngineExport.build_adapter_flux(norm_feats, targetname)
+preproc = ScoringEngine.build_preproc(df_train, norm_feats = norm_feats)
+adapter = ScoringEngine.build_adapter_flux(norm_feats, targetname)
 
 df_train_pre = preproc(df_train)
 

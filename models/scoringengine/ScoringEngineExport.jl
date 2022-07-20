@@ -32,8 +32,6 @@ const j_red = "#CB3C33"
 include("preproc-utils.jl")
 include("preproc.jl")
 include("model.jl")
-
-include("inference.jl")
 include("plots.jl")
 include("explain.jl")
 

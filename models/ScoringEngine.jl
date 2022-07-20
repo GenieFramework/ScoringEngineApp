@@ -1,52 +1,57 @@
 module ScoringEngine
 
-using BSON
-using HTTP
-# using Sockets
-# using JSON3
-# using JSONTables
-using DataFrames
-using Stipple
-using StippleUI
-using StipplePlotly
-using PlotlyBase
-using PlotlyJS
-using Random
+using DataFrames, BSON
+using Stipple, StippleUI, StipplePlotly, PlotlyBase, PlotlyJS
+using Random, Flux, ShapML, Loess, Weave, EvoTrees
+using EvoTrees: predict
 
-using ShapML
-using Weave
-
-using StatsBase: sample
+using StatsBase: sample, quantile
 using Statistics: mean, std
 
-include("scoringengine/ScoringEngineExport.jl")
 
 export Score
+
+export logit
+export one_way_data, one_way_plot, one_way_plot_weights
+
+export get_shap_importance,
+    get_shap_effect, 
+    plot_shap_importance, 
+    plot_shap_effect, 
+    get_shap_explain,
+    plot_shap_explain
+
 
 const j_blue = "#4063D8"
 const j_green = "#389826"
 const j_purple = "#9558B2"
 const j_red = "#CB3C33"
 
+include("scoringengine/preproc-utils.jl")
+include("scoringengine/preproc.jl")
+include("scoringengine/model.jl")
+include("scoringengine/plots.jl")
+include("scoringengine/explain.jl")
+
 const assets_path = joinpath(@__DIR__, "..", "assets")
 
 df_tot = begin
-    df_tot = ScoringEngineExport.load_data(joinpath(assets_path, "training_data.csv"))
+    df_tot = load_data(joinpath(assets_path, "training_data.csv"))
     transform!(df_tot, "claim_amount" => ByRow(x -> x > 0 ? 1.0f0 : 0.0f0) => "event")
     dropmissing!(df_tot)
 end
 
-const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), ScoringEngineExport)[:preproc]
-const preproc_gbt = BSON.load(joinpath(assets_path, "preproc-gbt.bson"), ScoringEngineExport)[:preproc]
+const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), ScoringEngine)[:preproc]
+const preproc_gbt = BSON.load(joinpath(assets_path, "preproc-gbt.bson"), ScoringEngine)[:preproc]
 
-const adapter_flux = BSON.load(joinpath(assets_path, "adapter-flux.bson"), ScoringEngineExport)[:adapter]
-const adapter_gbt = BSON.load(joinpath(assets_path, "adapter-gbt.bson"), ScoringEngineExport)[:adapter]
+const adapter_flux = BSON.load(joinpath(assets_path, "adapter-flux.bson"), ScoringEngine)[:adapter]
+const adapter_gbt = BSON.load(joinpath(assets_path, "adapter-gbt.bson"), ScoringEngine)[:adapter]
 
-const model_flux = BSON.load(joinpath(assets_path, "model-flux.bson"), ScoringEngineExport)[:model]
-const model_gbt = BSON.load(joinpath(assets_path, "model-gbt.bson"), ScoringEngineExport)[:model]
+const model_flux = BSON.load(joinpath(assets_path, "model-flux.bson"), ScoringEngine)[:model]
+const model_gbt = BSON.load(joinpath(assets_path, "model-gbt.bson"), ScoringEngine)[:model]
 
 function infer_flux(df::DataFrame)
-    score = df |> preproc_flux |> adapter_flux |> model_flux |> ScoringEngineExport.logit
+    score = df |> preproc_flux |> adapter_flux |> model_flux |> logit
     return Float64.(score)
 end
 
@@ -123,14 +128,14 @@ end
 
 const p_importance_flux = begin
     df_shap = run_shap(df_sample, model="flux", target_features=features_importance)
-    df_importance = ScoringEngineExport.get_shap_importance(df_shap)
-    ScoringEngineExport.plot_shap_importance(df_importance, color=j_green, title="Flux feature importance")
+    df_importance = get_shap_importance(df_shap)
+    plot_shap_importance(df_importance, color=j_green, title="Flux feature importance")
 end
 
 const p_importance_gbt = begin
     df_shap = run_shap(df_sample, model="gbt", target_features=features_importance)
-    df_importance = ScoringEngineExport.get_shap_importance(df_shap)
-    ScoringEngineExport.plot_shap_importance(df_importance, color=j_purple, title="GBT feature importance")
+    df_importance = get_shap_importance(df_shap)
+    plot_shap_importance(df_importance, color=j_purple, title="GBT feature importance")
 end
 
 # Reactive Stipple Model for frontend
@@ -172,8 +177,8 @@ Return one-way effect plot based on selected var
 function one_way_plot!(df, m::Score)
 
     targets = ["event", "flux", "gbt"]
-    df_bins = ScoringEngineExport.one_way_data(df, m.feature[], 10; targets, method=m.groupmethod[])
-    p = ScoringEngineExport.one_way_plot_weights(df_bins; targets)
+    df_bins = one_way_data(df, m.feature[], 10; targets, method=m.groupmethod[])
+    p = one_way_plot_weights(df_bins; targets)
 
     m.one_way_traces[] = p[:traces]
     m.one_way_layout[] = p[:layout]
@@ -189,13 +194,13 @@ function shap_effect_plot!(df, m::Score)
     df_sample = df[ids, :]
 
     df_shap_flux = run_shap(df_sample, model="flux"; reference=df, target_features=[m.feature[]])
-    shap_effect_flux = ScoringEngineExport.get_shap_effect(df_shap_flux, feat=m.feature[])
+    shap_effect_flux = get_shap_effect(df_shap_flux, feat=m.feature[])
 
     df_shap_gbt = run_shap(df_sample, model="gbt"; reference=df, target_features=[m.feature[]])
-    shap_effect_gbt = ScoringEngineExport.get_shap_effect(df_shap_gbt, feat=m.feature[])
+    shap_effect_gbt = get_shap_effect(df_shap_gbt, feat=m.feature[])
 
-    p_flux = ScoringEngineExport.plot_shap_effect(shap_effect_flux, color=j_green, title="Feature effect", name="flux")
-    p_gbt = ScoringEngineExport.plot_shap_effect(shap_effect_gbt, color=j_purple, title="Feature effect", name="gbt")
+    p_flux = plot_shap_effect(shap_effect_flux, color=j_green, title="Feature effect", name="flux")
+    p_gbt = plot_shap_effect(shap_effect_gbt, color=j_purple, title="Feature effect", name="gbt")
 
     m.shap_effect_traces[] = [p_flux[:traces]..., p_gbt[:traces]...]
     m.shap_effect_layout[] = p_flux[:layout]
@@ -211,13 +216,13 @@ function shap_explain_plot!(df, m::Score)
     df_sample = df[ids, :]
 
     df_shap_flux = run_shap(df_sample, model="flux"; reference=df, target_features=features_importance)
-    df_explain_flux = ScoringEngineExport.get_shap_explain(df_shap_flux)
+    df_explain_flux = get_shap_explain(df_shap_flux)
 
     df_shap_gbt = run_shap(df_sample, model="gbt"; reference=df, target_features=features_importance)
-    df_explain_gbt = ScoringEngineExport.get_shap_explain(df_shap_gbt)
+    df_explain_gbt = get_shap_explain(df_shap_gbt)
 
-    p_flux = ScoringEngineExport.plot_shap_explain(df_explain_flux, title="Flux explain")
-    p_gbt = ScoringEngineExport.plot_shap_explain(df_explain_gbt, title="GBT explain")
+    p_flux = plot_shap_explain(df_explain_flux, title="Flux explain")
+    p_gbt = plot_shap_explain(df_explain_gbt, title="GBT explain")
 
     m.explain_flux_traces[] = p_flux[:traces]
     m.explain_flux_layout[] = p_flux[:layout]
