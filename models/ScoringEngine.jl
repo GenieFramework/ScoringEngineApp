@@ -36,6 +36,8 @@ df_tot = begin
     dropmissing!(df_tot)
 end
 
+@info "------------------" ScoringEngineExport.xyz()
+
 const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), ScoringEngineExport)[:preproc]
 const preproc_gbt = BSON.load(joinpath(assets_path, "preproc-gbt.bson"), ScoringEngineExport)[:preproc]
 
