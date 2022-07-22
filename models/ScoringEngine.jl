@@ -160,6 +160,17 @@ end
   explain_gbt_layout::R{PlotlyBase.Layout} = PlotlyBase.Layout()
   explain_gbt_config::R{PlotlyBase.PlotConfig} = PlotlyBase.PlotConfig()
 
+  # Flux feature importance
+  hist_flux_traces::R{Vector{GenericTrace}} = p_importance_flux[:traces]
+  hist_flux_layout::R{PlotlyBase.Layout} = p_importance_flux[:layout]
+  hist_flux_config::R{PlotlyBase.PlotConfig} = p_importance_flux[:config]
+
+  # GBT feature importance
+  hist_gbt_traces::R{Vector{GenericTrace}} = p_importance_gbt[:traces]
+  hist_gbt_layout::R{PlotlyBase.Layout} = p_importance_gbt[:layout]
+  hist_gbt_config::R{PlotlyBase.PlotConfig} = p_importance_gbt[:config]
+  
+
   weave::R{Bool} = false
   resample::R{Bool} = false
   sample_size::R{Int} = 50
@@ -281,6 +292,7 @@ function handlers(model::Score)
     end
 
     on(model.resample) do _
+        @info "this worked"
         if model.resample[]
             shap_effect_plot!(df_tot, model)
             shap_explain_plot!(df_tot, model)
