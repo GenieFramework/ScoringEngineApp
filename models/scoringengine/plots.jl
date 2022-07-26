@@ -54,24 +54,14 @@ function one_way_plot(df; targets)
     end
 
     p_layout = PlotlyBase.Layout(
-        # width=800,
-        # height=500,
-        # yaxis_range=[0, max_y],
         title="One-way effect",
         plot_bgcolor="white",
         xaxis=attr(title="Feature value"),
         yaxis=attr(title="Target value", linecolor="black", gridcolor="lightgray"),
         legend=attr(orientation="h")
-        # margin=attr(l=0, t=50, r=50, b=0),
-        # autosize=true,
     )
 
     p_config = PlotlyBase.PlotConfig(displaylogo=false, displayModeBar=false, responsive=false)
-
-    # p = PlotlyBase.Plot(
-    #     [trace_1],
-    #     p_layout;
-    #     config=p_config)
 
     return (
         traces=traces,
@@ -109,15 +99,11 @@ function one_way_plot_weights(df; targets)
     end
 
     p_layout = PlotlyBase.Layout(
-        # width=800,
-        # height=500,
-        # yaxis_range=[0, max_y],
         title="One-way effect",
         plot_bgcolor="white",
         xaxis=attr(title="Feature groups"),
         yaxis=attr(title="Weight", side="right"),
         yaxis2=attr(title="Target value", linecolor="none", gridcolor="lightgray", overlaying="y", side="left"),
-        # margin=attr(l=0, t=0, r=0, b=0),
         legend=attr(orientation="h"),
         autosize=true,
     )

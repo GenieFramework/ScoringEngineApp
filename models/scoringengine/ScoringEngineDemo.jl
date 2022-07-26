@@ -1,19 +1,12 @@
 module ScoringEngineDemo
 
-# using DataFrames
-using Flux
-using EvoTrees
+using Flux, EvoTrees, Loess
 using EvoTrees: predict
 using DataFrames, CSV
-
-using ShapML
-using Loess
+using StipplePlotly, PlotlyBase
 
 using StatsBase: sample, quantile
 using Statistics: mean, std
-
-using StipplePlotly
-using PlotlyBase
 
 export logit
 export one_way_data, one_way_plot, one_way_plot_weights

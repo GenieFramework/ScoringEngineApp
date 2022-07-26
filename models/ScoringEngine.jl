@@ -1,20 +1,12 @@
 module ScoringEngine
 
 using BSON
-# using HTTP
-# using Sockets
-# using JSON3
-# using JSONTables
-using DataFrames
-using Stipple
-using StippleUI
-using StipplePlotly
-using PlotlyBase
-using PlotlyJS
+using DataFrames, CSV
+using Stipple, StippleUI, StipplePlotly 
+using PlotlyBase, PlotlyJS
 using Random
 
-using ShapML
-using Weave
+using ShapML, Weave
 
 using StatsBase: sample
 using Statistics: mean, std
@@ -28,7 +20,7 @@ const j_green = "#389826"
 const j_purple = "#9558B2"
 const j_red = "#CB3C33"
 
-const assets_path = "/Users/abhi/.julia/geniebuilder/apps/ScoringEngineApp/assets" # change this to something AppDir relative
+const assets_path = joinpath(@__DIR__ , "..", "assets")
 
 df_tot = begin
     df_tot = ScoringEngineDemo.load_data(joinpath(assets_path, "training_data.csv"))
@@ -299,19 +291,6 @@ function handlers(model::Score)
             model.resample[] = false
         end
     end
-
-    # on(model.weave) do _
-    #     if (model.weave[])
-    #         data = prepare_report(df_tot, model)
-    #         weave("report.jmd",
-    #             doctype="pandoc2html",
-    #             pandoc_options=["--toc", "--toc-depth= 3", "--self-contained"],
-    #             out_path=@__DIR__,
-    #             fig_path=joinpath(@__DIR__, "fig"),
-    #             args=data)
-    #         model.weave[] = false
-    #     end
-    # end
 
     return model
 end
