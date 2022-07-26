@@ -1,7 +1,7 @@
 module ScoringEngine
 
 using BSON
-using HTTP
+# using HTTP
 # using Sockets
 # using JSON3
 # using JSONTables
@@ -17,7 +17,7 @@ using ShapML
 using Weave
 
 using StatsBase: sample
-# using Statistics: mean, std
+using Statistics: mean, std
 
 include("scoringengine/ScoringEngineDemo.jl")
 

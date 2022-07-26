@@ -4,12 +4,13 @@ module ScoringEngineDemo
 using Flux
 using EvoTrees
 using EvoTrees: predict
+using DataFrames, CSV
 
 using ShapML
 using Loess
 
 using StatsBase: sample, quantile
-# using Statistics: mean, std
+using Statistics: mean, std
 
 using StipplePlotly
 using PlotlyBase
@@ -30,10 +31,7 @@ const j_purple = "#9558B2"
 const j_red = "#CB3C33"
 
 include("preproc-utils.jl")
-include("preproc.jl")
 include("model.jl")
-
-include("inference.jl")
 include("plots.jl")
 include("explain.jl")
 
