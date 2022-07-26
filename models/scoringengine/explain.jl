@@ -99,7 +99,7 @@ end
 
 
 """
-    get_shap_importance(df_shap)
+    get_shap_explain(df_shap)
 Returns feature importance dataframe from a SHAP run result.
 """
 function get_shap_explain(df_shap)
