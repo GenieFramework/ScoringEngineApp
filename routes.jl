@@ -9,7 +9,7 @@ using ScoringEngineApp
 using ScoringEngineApp.ScoringEngine
 
 
-Page("/", view = "views/hello.jl.html",
+Page("/", view = "views/scoreboard.jl.html",
           layout = "layouts/app.jl.html",
           model = () -> ScoringEngineApp.ScoringEngine.Score |> init_from_storage |> ScoringEngine.handlers,
           context = @__MODULE__)
