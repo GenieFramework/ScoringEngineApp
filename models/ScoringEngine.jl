@@ -3,7 +3,7 @@ module ScoringEngine
 using BSON
 using DataFrames, CSV
 using Stipple, StippleUI, StipplePlotly 
-using PlotlyBase, PlotlyJS
+using PlotlyBase
 using Random
 
 using ShapML, Weave
