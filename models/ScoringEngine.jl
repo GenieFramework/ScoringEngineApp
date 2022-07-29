@@ -6,7 +6,7 @@ using Stipple, StippleUI, StipplePlotly
 using PlotlyBase
 using Random
 
-using ShapML, Weave
+using ShapML
 
 using StatsBase: sample
 using Statistics: mean, std
@@ -22,11 +22,14 @@ const j_red = "#CB3C33"
 
 const assets_path = joinpath(@__DIR__ , "..", "assets")
 
-df_tot = begin
-    df_tot = ScoringEngineDemo.load_data(joinpath(assets_path, "training_data.csv"))
-    transform!(df_tot, "claim_amount" => ByRow(x -> x > 0 ? 1.0f0 : 0.0f0) => "event")
-    dropmissing!(df_tot)
-end
+# features to be passed to shap function
+const features_importance = ["pol_no_claims_discount", "pol_coverage", "pol_duration",
+    "pol_sit_duration", "vh_value", "vh_weight", "vh_age", "population",
+    "town_surface_area", "drv_sex1", "drv_sex2", "drv_age1", "pol_pay_freq", "drv_age_lic1"]
+
+# available features for one-way effect - only numeric features ATM
+const features_effect = ["pol_no_claims_discount", "pol_duration", "pol_sit_duration", "vh_value",
+    "vh_weight", "vh_age", "population", "town_surface_area", "drv_age1", "drv_age_lic1"]
 
 const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), ScoringEngineDemo)[:preproc]
 const preproc_gbt = BSON.load(joinpath(assets_path, "preproc-gbt.bson"), ScoringEngineDemo)[:preproc]
@@ -37,6 +40,21 @@ const adapter_gbt = BSON.load(joinpath(assets_path, "adapter-gbt.bson"), Scoring
 const model_flux = BSON.load(joinpath(assets_path, "model-flux.bson"), ScoringEngineDemo)[:model]
 const model_gbt = BSON.load(joinpath(assets_path, "model-gbt.bson"), ScoringEngineDemo)[:model]
 
+df_tot = begin
+    df_tot = ScoringEngineDemo.load_data(joinpath(assets_path, "training_data.csv"))
+    transform!(df_tot, "claim_amount" => ByRow(x -> x > 0 ? 1.0f0 : 0.0f0) => "event")
+    dropmissing!(df_tot)
+end
+
+const years = unique(df_tot[!, "year"])
+const rng = Random.MersenneTwister(123)
+
+const df_sample = begin
+    sample_size = 30
+    ids = sample(rng, 1:nrow(df_tot), sample_size, replace=false, ordered=true)
+    df_tot[ids, :]
+end
+
 function infer_flux(df::DataFrame)
     score = df |> preproc_flux |> adapter_flux |> model_flux |> ScoringEngineDemo.logit
     return Float64.(score)
@@ -45,6 +63,20 @@ end
 function infer_gbt(df::DataFrame)
     score = ScoringEngineDemo.predict(model_gbt, df |> preproc_gbt |> adapter_gbt) |> vec
     return Float64.(score)
+end
+
+function add_scores!(df::DataFrame)
+    scores_flux = infer_flux(df)
+    scores_gbt = infer_gbt(df)
+    df[:, :flux] .= scores_flux
+    df[:, :gbt] .= scores_gbt
+    return nothing
+end
+
+const df_preds = begin
+    df_preds = copy(df_tot)
+    add_scores!(df_preds)
+    df_preds
 end
 
 function pred_shap_flux(model, df)
@@ -78,39 +110,6 @@ function run_shap(df; reference=nothing, model, target_features, sample_size=30)
         sample_size=sample_size,
         seed=123)
     return data_shap
-end
-
-# features to be passed to shap function
-const features_importance = ["pol_no_claims_discount", "pol_coverage", "pol_duration",
-    "pol_sit_duration", "vh_value", "vh_weight", "vh_age", "population",
-    "town_surface_area", "drv_sex1", "drv_sex2", "drv_age1", "pol_pay_freq", "drv_age_lic1"]
-
-# available features for one-way effect - only numeric features ATM
-const features_effect = ["pol_no_claims_discount", "pol_duration", "pol_sit_duration", "vh_value",
-    "vh_weight", "vh_age", "population", "town_surface_area", "drv_age1", "drv_age_lic1"]
-
-function add_scores!(df::DataFrame)
-    scores_flux = infer_flux(df)
-    scores_gbt = infer_gbt(df)
-    df[:, :flux] .= scores_flux
-    df[:, :gbt] .= scores_gbt
-    return nothing
-end
-
-const df_preds = begin
-    df_preds = copy(df_tot)
-    add_scores!(df_preds)
-    df_preds
-end
-
-const years = unique(df_tot[!, "year"])
-const rng = Random.MersenneTwister(123)
-
-
-const df_sample = begin
-    sample_size = 30
-    ids = sample(rng, 1:nrow(df_tot), sample_size, replace=false, ordered=true)
-    df_tot[ids, :]
 end
 
 const p_importance_flux = begin
@@ -162,8 +161,6 @@ end
   hist_gbt_layout::R{PlotlyBase.Layout} = p_importance_gbt[:layout]
   hist_gbt_config::R{PlotlyBase.PlotConfig} = p_importance_gbt[:config]
   
-
-  weave::R{Bool} = false
   resample::R{Bool} = false
   sample_size::R{Int} = 50
 end
@@ -231,34 +228,6 @@ function shap_explain_plot!(df, m::Score)
     m.explain_gbt_config[] = p_gbt[:config]
 
     return nothing
-end
-
-"""
-    prepare_report(df, model::Model)
-WIP: Report generation with Weave
-"""
-function prepare_report(df, model::Score)
-
-    isempty(model.feature[]) && return nothing
-    ids = sample(1:nrow(df), sample_size, replace=false, ordered=true)
-    df_sample = df[ids, :]
-    @info "df size" size(df_sample)
-    add_scores!(df_sample)
-    data_flux = run_shap_flux(df_sample, "flux")
-    feat_flux = get_feat_importance(data_flux)
-    shap_flux = plot_shap(data_flux, model.feature[])
-
-    data_gbt = run_shap_gbt(df_sample, "gbt")
-    feat_gbt = get_feat_importance(data_gbt)
-    shap_gbt = plot_shap(data_gbt, model.feature[])
-
-    data = Dict(
-        :shap_flux => shap_flux,
-        :shap_gbt => shap_gbt,
-        :feat_flux => feat_flux,
-        :feat_gbt => feat_gbt)
-
-    return data
 end
 
 function handlers(model::Score)
