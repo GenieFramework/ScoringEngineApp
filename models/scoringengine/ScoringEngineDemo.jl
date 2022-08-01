@@ -12,9 +12,9 @@ export logit
 export one_way_data, one_way_plot, one_way_plot_weights
 
 export get_shap_importance,
-    get_shap_effect, 
-    plot_shap_importance, 
-    plot_shap_effect, 
+    get_shap_effect,
+    plot_shap_importance,
+    plot_shap_effect,
     get_shap_explain,
     plot_shap_explain
 

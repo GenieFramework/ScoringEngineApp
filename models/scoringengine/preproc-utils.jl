@@ -58,34 +58,22 @@ drv_exp_yrs = ["drv_age_lic1", "drv_age1"] => age_diff => "drv_exp_yrs"
     Categorical Mappings
 """
 # coverage maping
-pol_cov_dict = Dict{String,Float64}(
-    "Min" => 1,
-    "Med1" => 2,
-    "Med2" => 3,
-    "Max" => 4)
+pol_cov_dict = Dict{String,Float64}("Min" => 1, "Med1" => 2, "Med2" => 3, "Max" => 4)
 
 pol_cov_map(x) = get(pol_cov_dict, x, 4)
 cov_mapping = "pol_coverage" => ByRow(pol_cov_map) => "pol_coverage"
 
 # drv_sex1
-drv_sex1_dict = Dict{String,Float64}(
-    "M" => 0,
-    "F" => 1)
+drv_sex1_dict = Dict{String,Float64}("M" => 0, "F" => 1)
 drv_sex1_map(x) = get(drv_sex1_dict, x, 0)
 drv_sex1 = "drv_sex1" => ByRow(drv_sex1_map) => "drv_sex1"
 
 # drv_sex2 A
-drv_sex2_dict_A = Dict{String,Float64}(
-    "0" => 0,
-    "M" => 1,
-    "F" => 1)
+drv_sex2_dict_A = Dict{String,Float64}("0" => 0, "M" => 1, "F" => 1)
 drv_sex2_map_A(x) = get(drv_sex2_dict_A, x, 0)
 has_drv2 = "drv_sex2" => ByRow(drv_sex2_map_A) => "has_drv2"
 
 # drv_sex2 B
-drv_sex2_dict_B = Dict{String,Float64}(
-    "0" => 0,
-    "M" => 1,
-    "F" => 0)
+drv_sex2_dict_B = Dict{String,Float64}("0" => 0, "M" => 1, "F" => 0)
 drv_sex2_map_B(x) = get(drv_sex2_dict_B, x, 0)
 is_drv2_male = "drv_sex2" => ByRow(drv_sex2_map_B) => "is_drv2_male"

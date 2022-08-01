@@ -23,5 +23,5 @@ using Main.ScoringEngineApp, Test, TestSetExtensions, Logging
 Logging.global_logger(NullLogger())
 
 @testset ExtendedTestSet "ScoringEngineApp tests" begin
-  @includetests ARGS
+    @includetests ARGS
 end

@@ -2,7 +2,7 @@ module ScoringEngine
 
 using BSON
 using DataFrames, CSV
-using Stipple, StippleUI, StipplePlotly 
+using Stipple, StippleUI, StipplePlotly
 using PlotlyBase
 using Random
 
@@ -20,25 +20,54 @@ const j_green = "#389826"
 const j_purple = "#9558B2"
 const j_red = "#CB3C33"
 
-const assets_path = joinpath(@__DIR__ , "..", "assets")
+const assets_path = joinpath(@__DIR__, "..", "assets")
 
 # features to be passed to shap function
-const features_importance = ["pol_no_claims_discount", "pol_coverage", "pol_duration",
-    "pol_sit_duration", "vh_value", "vh_weight", "vh_age", "population",
-    "town_surface_area", "drv_sex1", "drv_sex2", "drv_age1", "pol_pay_freq", "drv_age_lic1"]
+const features_importance = [
+    "pol_no_claims_discount",
+    "pol_coverage",
+    "pol_duration",
+    "pol_sit_duration",
+    "vh_value",
+    "vh_weight",
+    "vh_age",
+    "population",
+    "town_surface_area",
+    "drv_sex1",
+    "drv_sex2",
+    "drv_age1",
+    "pol_pay_freq",
+    "drv_age_lic1",
+]
 
 # available features for one-way effect - only numeric features ATM
-const features_effect = ["pol_no_claims_discount", "pol_duration", "pol_sit_duration", "vh_value",
-    "vh_weight", "vh_age", "population", "town_surface_area", "drv_age1", "drv_age_lic1"]
+const features_effect = [
+    "pol_no_claims_discount",
+    "pol_duration",
+    "pol_sit_duration",
+    "vh_value",
+    "vh_weight",
+    "vh_age",
+    "population",
+    "town_surface_area",
+    "drv_age1",
+    "drv_age_lic1",
+]
 
-const preproc_flux = BSON.load(joinpath(assets_path, "preproc-flux.bson"), ScoringEngineDemo)[:preproc]
-const preproc_gbt = BSON.load(joinpath(assets_path, "preproc-gbt.bson"), ScoringEngineDemo)[:preproc]
+const preproc_flux =
+    BSON.load(joinpath(assets_path, "preproc-flux.bson"), ScoringEngineDemo)[:preproc]
+const preproc_gbt =
+    BSON.load(joinpath(assets_path, "preproc-gbt.bson"), ScoringEngineDemo)[:preproc]
 
-const adapter_flux = BSON.load(joinpath(assets_path, "adapter-flux.bson"), ScoringEngineDemo)[:adapter]
-const adapter_gbt = BSON.load(joinpath(assets_path, "adapter-gbt.bson"), ScoringEngineDemo)[:adapter]
+const adapter_flux =
+    BSON.load(joinpath(assets_path, "adapter-flux.bson"), ScoringEngineDemo)[:adapter]
+const adapter_gbt =
+    BSON.load(joinpath(assets_path, "adapter-gbt.bson"), ScoringEngineDemo)[:adapter]
 
-const model_flux = BSON.load(joinpath(assets_path, "model-flux.bson"), ScoringEngineDemo)[:model]
-const model_gbt = BSON.load(joinpath(assets_path, "model-gbt.bson"), ScoringEngineDemo)[:model]
+const model_flux =
+    BSON.load(joinpath(assets_path, "model-flux.bson"), ScoringEngineDemo)[:model]
+const model_gbt =
+    BSON.load(joinpath(assets_path, "model-gbt.bson"), ScoringEngineDemo)[:model]
 
 df_tot = begin
     df_tot = ScoringEngineDemo.load_data(joinpath(assets_path, "training_data.csv"))
@@ -51,7 +80,7 @@ const rng = Random.MersenneTwister(123)
 
 const df_sample = begin
     sample_size = 30
-    ids = sample(rng, 1:nrow(df_tot), sample_size, replace=false, ordered=true)
+    ids = sample(rng, 1:nrow(df_tot), sample_size, replace = false, ordered = true)
     df_tot[ids, :]
 end
 
@@ -81,17 +110,17 @@ end
 
 function pred_shap_flux(model, df)
     scores = infer_flux(df::DataFrame)
-    pred_df = DataFrame(score=scores)
+    pred_df = DataFrame(score = scores)
     return pred_df
 end
 
 function pred_shap_gbt(model, df)
     scores = infer_gbt(df::DataFrame)
-    pred_df = DataFrame(score=scores)
+    pred_df = DataFrame(score = scores)
     return pred_df
 end
 
-function run_shap(df; reference=nothing, model, target_features, sample_size=30)
+function run_shap(df; reference = nothing, model, target_features, sample_size = 30)
     if model == "flux"
         predict_function = pred_shap_flux
     elseif model == "gbt"
@@ -102,67 +131,76 @@ function run_shap(df; reference=nothing, model, target_features, sample_size=30)
 
     isnothing(reference) ? reference = copy(df) : nothing
     data_shap = ShapML.shap(
-        explain=df,
-        reference=reference,
-        target_features=target_features,
-        model=model,
-        predict_function=predict_function,
-        sample_size=sample_size,
-        seed=123)
+        explain = df,
+        reference = reference,
+        target_features = target_features,
+        model = model,
+        predict_function = predict_function,
+        sample_size = sample_size,
+        seed = 123,
+    )
     return data_shap
 end
 
 const p_importance_flux = begin
-    df_shap = run_shap(df_sample, model="flux", target_features=features_importance)
+    df_shap = run_shap(df_sample, model = "flux", target_features = features_importance)
     df_importance = ScoringEngineDemo.get_shap_importance(df_shap)
-    ScoringEngineDemo.plot_shap_importance(df_importance, color=j_green, title="Flux feature importance")
+    ScoringEngineDemo.plot_shap_importance(
+        df_importance,
+        color = j_green,
+        title = "Flux feature importance",
+    )
 end
 
 const p_importance_gbt = begin
-    df_shap = run_shap(df_sample, model="gbt", target_features=features_importance)
+    df_shap = run_shap(df_sample, model = "gbt", target_features = features_importance)
     df_importance = ScoringEngineDemo.get_shap_importance(df_shap)
-    ScoringEngineDemo.plot_shap_importance(df_importance, color=j_purple, title="GBT feature importance")
+    ScoringEngineDemo.plot_shap_importance(
+        df_importance,
+        color = j_purple,
+        title = "GBT feature importance",
+    )
 end
 
 # Reactive Stipple Model for frontend
 @reactive mutable struct Score <: ReactiveModel
 
-  features::R{Vector{String}} = features_effect
-  feature::R{String} = "vh_value"
+    features::R{Vector{String}} = features_effect
+    feature::R{String} = "vh_value"
 
-  # One-way plots
-  groupmethod::R{String} = "quantiles"
-  one_way_traces::R{Vector{GenericTrace}} = [PlotlyBase.scatter()]
-  one_way_layout::R{PlotlyBase.Layout} = PlotlyBase.Layout()
-  one_way_config::R{PlotlyBase.PlotConfig} = PlotlyBase.PlotConfig()
+    # One-way plots
+    groupmethod::R{String} = "quantiles"
+    one_way_traces::R{Vector{GenericTrace}} = [PlotlyBase.scatter()]
+    one_way_layout::R{PlotlyBase.Layout} = PlotlyBase.Layout()
+    one_way_config::R{PlotlyBase.PlotConfig} = PlotlyBase.PlotConfig()
 
-  # plot_layout and config: Plotly specific 
-  shap_effect_traces::R{Vector{GenericTrace}} = [PlotlyBase.scatter()]
-  shap_effect_layout::R{PlotlyBase.Layout} = PlotlyBase.Layout()
-  shap_effect_config::R{PlotlyBase.PlotConfig} = PlotlyBase.PlotConfig()
+    # plot_layout and config: Plotly specific 
+    shap_effect_traces::R{Vector{GenericTrace}} = [PlotlyBase.scatter()]
+    shap_effect_layout::R{PlotlyBase.Layout} = PlotlyBase.Layout()
+    shap_effect_config::R{PlotlyBase.PlotConfig} = PlotlyBase.PlotConfig()
 
-  # Flux feature importance
-  explain_flux_traces::R{Vector{GenericTrace}} = [PlotlyBase.scatter()]
-  explain_flux_layout::R{PlotlyBase.Layout} = PlotlyBase.Layout()
-  explain_flux_config::R{PlotlyBase.PlotConfig} = PlotlyBase.PlotConfig()
+    # Flux feature importance
+    explain_flux_traces::R{Vector{GenericTrace}} = [PlotlyBase.scatter()]
+    explain_flux_layout::R{PlotlyBase.Layout} = PlotlyBase.Layout()
+    explain_flux_config::R{PlotlyBase.PlotConfig} = PlotlyBase.PlotConfig()
 
-  # GBT feature importance
-  explain_gbt_traces::R{Vector{GenericTrace}} = [PlotlyBase.scatter()]
-  explain_gbt_layout::R{PlotlyBase.Layout} = PlotlyBase.Layout()
-  explain_gbt_config::R{PlotlyBase.PlotConfig} = PlotlyBase.PlotConfig()
+    # GBT feature importance
+    explain_gbt_traces::R{Vector{GenericTrace}} = [PlotlyBase.scatter()]
+    explain_gbt_layout::R{PlotlyBase.Layout} = PlotlyBase.Layout()
+    explain_gbt_config::R{PlotlyBase.PlotConfig} = PlotlyBase.PlotConfig()
 
-  # Flux feature importance
-  hist_flux_traces::R{Vector{GenericTrace}} = p_importance_flux[:traces]
-  hist_flux_layout::R{PlotlyBase.Layout} = p_importance_flux[:layout]
-  hist_flux_config::R{PlotlyBase.PlotConfig} = p_importance_flux[:config]
+    # Flux feature importance
+    hist_flux_traces::R{Vector{GenericTrace}} = p_importance_flux[:traces]
+    hist_flux_layout::R{PlotlyBase.Layout} = p_importance_flux[:layout]
+    hist_flux_config::R{PlotlyBase.PlotConfig} = p_importance_flux[:config]
 
-  # GBT feature importance
-  hist_gbt_traces::R{Vector{GenericTrace}} = p_importance_gbt[:traces]
-  hist_gbt_layout::R{PlotlyBase.Layout} = p_importance_gbt[:layout]
-  hist_gbt_config::R{PlotlyBase.PlotConfig} = p_importance_gbt[:config]
-  
-  resample::R{Bool} = false
-  sample_size::R{Int} = 50
+    # GBT feature importance
+    hist_gbt_traces::R{Vector{GenericTrace}} = p_importance_gbt[:traces]
+    hist_gbt_layout::R{PlotlyBase.Layout} = p_importance_gbt[:layout]
+    hist_gbt_config::R{PlotlyBase.PlotConfig} = p_importance_gbt[:config]
+
+    resample::R{Bool} = false
+    sample_size::R{Int} = 50
 end
 
 """
@@ -172,7 +210,13 @@ Return one-way effect plot based on selected var
 function one_way_plot!(df, m::Score)
 
     targets = ["event", "flux", "gbt"]
-    df_bins = ScoringEngineDemo.one_way_data(df, m.feature[], 10; targets, method=m.groupmethod[])
+    df_bins = ScoringEngineDemo.one_way_data(
+        df,
+        m.feature[],
+        10;
+        targets,
+        method = m.groupmethod[],
+    )
     p = ScoringEngineDemo.one_way_plot_weights(df_bins; targets)
 
     m.one_way_traces[] = p[:traces]
@@ -185,17 +229,29 @@ end
 
 function shap_effect_plot!(df, m::Score)
 
-    ids = sample(rng, 1:nrow(df), m.sample_size[], replace=false, ordered=true)
+    ids = sample(rng, 1:nrow(df), m.sample_size[], replace = false, ordered = true)
     df_sample = df[ids, :]
 
-    df_shap_flux = run_shap(df_sample, model="flux"; reference=df, target_features=[m.feature[]])
-    shap_effect_flux = ScoringEngineDemo.get_shap_effect(df_shap_flux, feat=m.feature[])
+    df_shap_flux =
+        run_shap(df_sample, model = "flux"; reference = df, target_features = [m.feature[]])
+    shap_effect_flux = ScoringEngineDemo.get_shap_effect(df_shap_flux, feat = m.feature[])
 
-    df_shap_gbt = run_shap(df_sample, model="gbt"; reference=df, target_features=[m.feature[]])
-    shap_effect_gbt = ScoringEngineDemo.get_shap_effect(df_shap_gbt, feat=m.feature[])
+    df_shap_gbt =
+        run_shap(df_sample, model = "gbt"; reference = df, target_features = [m.feature[]])
+    shap_effect_gbt = ScoringEngineDemo.get_shap_effect(df_shap_gbt, feat = m.feature[])
 
-    p_flux = ScoringEngineDemo.plot_shap_effect(shap_effect_flux, color=j_green, title="Feature effect", name="flux")
-    p_gbt = ScoringEngineDemo.plot_shap_effect(shap_effect_gbt, color=j_purple, title="Feature effect", name="gbt")
+    p_flux = ScoringEngineDemo.plot_shap_effect(
+        shap_effect_flux,
+        color = j_green,
+        title = "Feature effect",
+        name = "flux",
+    )
+    p_gbt = ScoringEngineDemo.plot_shap_effect(
+        shap_effect_gbt,
+        color = j_purple,
+        title = "Feature effect",
+        name = "gbt",
+    )
 
     m.shap_effect_traces[] = [p_flux[:traces]..., p_gbt[:traces]...]
     m.shap_effect_layout[] = p_flux[:layout]
@@ -207,17 +263,27 @@ end
 function shap_explain_plot!(df, m::Score)
 
     sample_size = 1
-    ids = sample(rng, 1:nrow(df), sample_size, replace=false, ordered=true)
+    ids = sample(rng, 1:nrow(df), sample_size, replace = false, ordered = true)
     df_sample = df[ids, :]
 
-    df_shap_flux = run_shap(df_sample, model="flux"; reference=df, target_features=features_importance)
+    df_shap_flux = run_shap(
+        df_sample,
+        model = "flux";
+        reference = df,
+        target_features = features_importance,
+    )
     df_explain_flux = ScoringEngineDemo.get_shap_explain(df_shap_flux)
 
-    df_shap_gbt = run_shap(df_sample, model="gbt"; reference=df, target_features=features_importance)
+    df_shap_gbt = run_shap(
+        df_sample,
+        model = "gbt";
+        reference = df,
+        target_features = features_importance,
+    )
     df_explain_gbt = ScoringEngineDemo.get_shap_explain(df_shap_gbt)
 
-    p_flux = ScoringEngineDemo.plot_shap_explain(df_explain_flux, title="Flux explain")
-    p_gbt = ScoringEngineDemo.plot_shap_explain(df_explain_gbt, title="GBT explain")
+    p_flux = ScoringEngineDemo.plot_shap_explain(df_explain_flux, title = "Flux explain")
+    p_gbt = ScoringEngineDemo.plot_shap_explain(df_explain_gbt, title = "GBT explain")
 
     m.explain_flux_traces[] = p_flux[:traces]
     m.explain_flux_layout[] = p_flux[:layout]
