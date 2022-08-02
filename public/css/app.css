@@ -4,6 +4,10 @@
     box-shadow: 0 4px 8px 0 rgba(97, 2, 2, 0.2);
     padding: 16px;
     text-align: center;
-    border-radius: 10%;
-    background-color: #f1f1f1;
+    border-radius: 5%;
+    background-color: #dedcdc;
+}
+
+.stipple-core .q-slider__track-container {
+    background-color: transparent !important;
 }
