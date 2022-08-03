@@ -318,14 +318,14 @@ function handlers(model::Score)
         shap_explain_plot!(df_tot, model)
     end
 
-    on(model.resample) do _
-        @info "this worked"
-        if model.resample[]
-            shap_effect_plot!(df_tot, model)
-            shap_explain_plot!(df_tot, model)
-            model.resample[] = false
-        end
-    end
+    # on(model.resample) do _
+    #     @info "this worked"
+    #     if model.resample[]
+    #         shap_effect_plot!(df_tot, model)
+    #         shap_explain_plot!(df_tot, model)
+    #         model.resample[] = false
+    #     end
+    # end
 
     return model
 end
