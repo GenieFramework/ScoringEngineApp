@@ -1,13 +1,36 @@
 /* place your custom css here */
 
-.col {
-    box-shadow: 0 4px 8px 0 rgba(97, 2, 2, 0.2);
+.plots {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
     padding: 16px;
     text-align: center;
     border-radius: 5%;
     background-color: #dedcdc;
 }
 
+.uicomponents {
+    box-shadow: 0 4px 8px 0 rgba(97, 2, 2, 0.2);
+    padding: 16px;
+    text-align: center;
+    border-radius: 0%;
+    background-color: #d6d6d1;
+}
+
 .stipple-core .q-slider__track-container {
     background-color: transparent !important;
 }
+
+
+.footer-dark {
+  margin: 40px;
+  color:#000000;
+}
+
+.footer-dark .copyright {
+  text-align:center;
+  padding-top:24px;
+  opacity:0.3;
+  font-size:13px;
+  margin-bottom:0;
+}
+

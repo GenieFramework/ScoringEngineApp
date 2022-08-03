@@ -1,49 +1,64 @@
+<!-- <div class="row">
+    <div class="col col-12 col-sm">
+        <h1 id="i4ar">Scoreboard</h1>
+    </div>
+</div> -->
+<header id="myheader" style="background:rgb(127, 120, 110); color:white; padding:10px 20px;">
+    <h3 style="color:white">Scoring Engine</h3>
+</header>
 <div class="row">
-  <div class="col col-4 col-sm">
-      <h6>Feature</h6>
-      <q-select :options="features" v-model="feature"></q-select>
-  </div>
-  <div class="col col-4 col-sm">
-      <h6>Group Method</h6>
-      <q-radio label="Quantities" v-model="groupmethod" val="quantiles"></q-radio>
-      <q-radio label="Linear" v-model="groupmethod" val="linear"></q-radio>
-  </div>
-  <div class="col col-4 col-sm">
-      <h6>Sample Size</h6>
-      <q-slider v-model="sample_size" :min="10" :max="100"></q-slider>
-  </div>
-  <!-- <div class="col col-4 col-sm">
+    <div class="col col-4 col-sm uicomponents">
+        <h6>Feature</h6>
+        <q-select :options="features" v-model="feature"></q-select>
+    </div>
+    <div class="col col-4 col-sm uicomponents">
+        <h6>Group Method</h6>
+        <q-radio label="Quantities" v-model="groupmethod" val="quantiles"></q-radio>
+        <q-radio label="Linear" v-model="groupmethod" val="linear"></q-radio>
+    </div>
+    <div class="col col-4 col-sm uicomponents">
+        <h6>Sample Size</h6>
+        <q-slider v-model="sample_size" :min="10" :max="100"></q-slider>
+    </div>
+    <!-- <div class="col col-4 col-sm">
       <h6>New Sampling</h6>
       <q-btn color="secondary" label="RESAMPLE" @click="resample=true"></q-btn>
   </div> -->
 </div>
 <div class="row">
-  <div class="col col-6 col-sm">
-      <h6>One-way effect</h6>
-      <plotly :data="one_way_traces" :layout="one_way_traces"></plotly>
-  </div>
-  <div class="col col-6 col-sm">
-      <h6>Feature Effect</h6>
-      <plotly :data="shap_effect_traces" :layout="shap_effect_traces"></plotly>
-  </div>
+    <div class="col col-6 col-sm plots">
+        <h6>One-way effect</h6>
+        <plotly :data="one_way_traces" :layout="one_way_traces"></plotly>
+    </div>
+    <div class="col col-6 col-sm plots">
+        <h6>Feature Effect</h6>
+        <plotly :data="shap_effect_traces" :layout="shap_effect_traces"></plotly>
+    </div>
 </div>
 <div class="row">
-  <div class="col col-6 col-sm">
-      <h6>Flux explain</h6>
-      <plotly :data="explain_flux_traces" :layout="explain_flux_traces"></plotly>
-  </div>
-  <div class="col col-6 col-sm">
-      <h6>GBT explain</h6>
-      <plotly :data="explain_gbt_traces" :layout="explain_gbt_traces"></plotly>
-  </div>
+    <div class="col col-6 col-sm plots">
+        <h6>Flux explain</h6>
+        <plotly :data="explain_flux_traces" :layout="explain_flux_traces"></plotly>
+    </div>
+    <div class="col col-6 col-sm plots">
+        <h6>GBT explain</h6>
+        <plotly :data="explain_gbt_traces" :layout="explain_gbt_traces"></plotly>
+    </div>
 </div>
 <div class="row">
-  <div class="col col-6 col-sm">
-      <h6>Flux feature importance</h6>
-      <plotly :data="hist_flux_traces" :layout="hist_flux_traces"></plotly>
-  </div>
-  <div class="col col-6 col-sm">
-      <h6>GBT feature importance</h6>
-      <plotly :data="hist_gbt_traces" :layout="hist_gbt_traces"></plotly>
-  </div>
+    <div class="col col-6 col-sm plots">
+        <h6>Flux feature importance</h6>
+        <plotly :data="hist_flux_traces" :layout="hist_flux_traces"></plotly>
+    </div>
+    <div class="col col-6 col-sm plots">
+        <h6>GBT feature importance</h6>
+        <plotly :data="hist_gbt_traces" :layout="hist_gbt_traces"></plotly>
+    </div>
+</div>
+
+
+<div class="footer-dark"
+    <footer>
+        <p class="copyright">Genie Builder © 2022</p>
+    </footer>
 </div>
