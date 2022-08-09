@@ -3,9 +3,11 @@
 This GenieBuilder app is a remake of [original project made by Jeremie from Julia Computing](https://github.com/JuliaComputing/ScoringEngineDemo.jl) which is a two video series:
 
 
-1. End to End Machine Learning Workflow using Julia [![video 1](scassets/0.1.png)](https://youtu.be/dzChtn9WWT8)
+1. End to End Machine Learning Workflow using Julia 
+[![video 1](scassets/0.1.png)](https://youtu.be/dzChtn9WWT8)
 
-2. Stipple - Building an Interactive App for data exploration and model explanation [![video 2](scassets/0.2.png)](https://youtu.be/TPbGUbdaRnI)
+2. Stipple - Building an Interactive App for data exploration and model explanation 
+[![video 2](scassets/0.2.png)](https://youtu.be/TPbGUbdaRnI)
 
 This project uses Flux MLP & EvoTrees logistics models for data exploration and model explainability
 
