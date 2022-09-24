@@ -1,3 +1,5 @@
+# Note: [because of BSON limitation this only work with Julia 1.7](https://github.com/JuliaComputing/ScoringEngineDemo.jl/pull/5)
+
 # Scoring Engine App
 
 ![](docs/scassets/geniebuilder.gif)
